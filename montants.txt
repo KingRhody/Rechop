@@ -1,0 +1,21 @@
+Habitants/Montants
+
+Anderlecht : 84975.8
+Auderghem : 24455.9
+Berchem : 17701.6
+Bruxelles : 131380.2
+Etterbeek : 33756.1
+Evere : 30436.7
+Forest : 39389.7
+Ganshoren : 17641.4
+Ixelles : 60841.9
+Jette : 36822.8
+Koekelberg : 15397.9
+Molenbeek : 67971.4
+St_Gilles : 33948.6
+St-Josse : 18766.3
+Schaerbeek : 91189
+Uccle : 59252.9
+W-Boisfort : 17633
+WSL : 40913.6
+WSP : 29474.2
