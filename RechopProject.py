@@ -9,8 +9,9 @@ for line in f:
 
 "print(initial_distance_matrix)"
 
-matrix_path, c1_path, c2_path, c3_path, c1_index, c2_index, c3_index, = [], [], [], [], [0], [0], [0]
-random_init_path = random.sample(range(1, 19), 3)
+matrix_index, c1_path, c2_path, c3_path,  c1_index, c2_index, c3_index = [], [], [], [], [0], [0], [0]
+matrix_path = [c1_path, c2_path, c3_path]
+random_init_path = random.sample(range(1, 20), 3)
 index_path_list = list(range(1, 20))
 
 
@@ -21,6 +22,32 @@ def generate_index_path(c_path_index_list, len_list):
         if index_path_list[index] not in random_init_path:
             c_path_index_list.append(index_path_list[index])
         index_path_list.remove(index_path_list[index])
+    matrix_index.append(c_path_index_list)
+
+
+def calculate_path_dist_risk(all_index_list, current_matrix_path):
+    """Generation d'une matrice de distances entre les communes traversees par les trois camions
+    + calcul de la distance total de chaque camion et le risque correspondant"""
+    current_index = 0
+    dist_foreach_path, risk_foreach_path = [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]
+
+    for i in all_index_list:
+        c = 0
+        while c < len(i) - 1:
+            get_distance = initial_distance_matrix[max(i[c], i[c + 1])][min(i[c], i[c + 1])]
+            current_matrix_path[current_index].append(get_distance)
+            dist_foreach_path[current_index] += get_distance
+            "risk_foreach_path[current_index] += get_distance*money_list[current_index]"
+            c += 1
+        current_index += 1
+    print(dist_foreach_path)
+
+
+def get_total_distance(dist_list):
+    total_distance = 0
+    for i in dist_list:
+        total_distance += i
+    return total_distance
 
 
 def c_index_init():
@@ -34,39 +61,14 @@ def c_index_init():
     generate_index_path(c3_index, 8)
 
     print(random_init_path)
-    print(c1_index, c2_index, c3_index)
-
-
-c_index_init()
-
-
-def generate_dist_path():
-    """length = len(initial_distance_matrix)
-    for i in range(20):
-        if (i not in random_init_path) and (len(c1_path)) < 6:
-            c1_path.append(initial_distance_matrix[i][-2])
-        elif (i not in random_init_path) and ((6 <= i < 2*len(c1_path)) or (len(c2_path) < 6)):
-            c2_path.append(initial_distance_matrix[i][-2])
-        elif (2*len(c1_path) <= i < length) and (i not in random_init_path):
-            c3_path.append(initial_distance_matrix[i][-2])"""
+    print(matrix_index)
 
 
 def initial_path():
     """Genration des trajets entre la banque et 3 premieres communes"""
-
-    c1_path.append(initial_distance_matrix[c1_index[1]][0])
-    c2_path.append(initial_distance_matrix[c2_index[1]][0])
-    c3_path.append(initial_distance_matrix[c3_index[1]][0])
-
-    print(c1_path, c2_path, c3_path)
-
-
-def fill_matrix_path():
-    initial_path()
-    matrix_path.append(c1_path)
-    matrix_path.append(c2_path)
-    matrix_path.append(c3_path)
+    c_index_init()
+    calculate_path_dist_risk(matrix_index, matrix_path)
     print(matrix_path)
 
 
-"fill_matrix_path()"
+initial_path()
