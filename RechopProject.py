@@ -44,6 +44,7 @@ def calculate_path_dist_risk(all_index_list, current_matrix_path):
     distance, risk = calculate_distance_risk(dist_foreach_path,risk_foreach_path)
     return distance, risk
 
+
 def calculate_distance_risk(distance_list, risk_list):
     total_distance = 0
     total_risk = 0
@@ -89,30 +90,43 @@ def generate_solution(current_matrix_index1, current_matrix_path1, current_matri
     return best_distance, best_risk
 
 
-matrix_index1 = [[], [], []]
-matrix_index2 = [[], [], []]
-matrix_path1 = [[], [], []]
-matrix_path2 = [[], [], []]
+mat_index1 = [[], [], []]
+mat_index2 = [[], [], []]
+mat_path1 = [[], [], []]
+mat_path2 = [[], [], []]
 
-print(generate_solution(matrix_index1, matrix_path1, matrix_index2, matrix_path2))
+"print(generate_solution(mat_index1, mat_path1, mat_index2, mat_path2))"
 
-def optimize_index_matrix(index_list, matrix):
-    optimized_list = []
+
+def bellmankalaba_optimizer(index_list, current_best, fixed_index, matrix, optimized_list):
+    for i in range(1, len(index_list)):
+        max1, min1 = max(index_list[i], fixed_index), min(index_list[i], fixed_index)
+        max2, min2 = max(current_best, fixed_index), min(current_best, fixed_index)
+        if matrix[max1][min1] < matrix[max2][min2]:
+            current_best = index_list[i]
+    optimized_list.append(current_best)
+    index_list.remove(current_best)
+
+
+def optimize_path(index_list, matrix):
+    optimized_list = [index_list[0]]
+    index_list.remove(index_list[0])
+    print(index_list)
+    index_list.remove(index_list[-1])
+    print(index_list)
+    fixed_index, current_best = optimized_list[-1], index_list[0]
+    while len(index_list) > 1:
+        print(optimized_list)
+        bellmankalaba_optimizer(index_list, current_best, fixed_index, matrix, optimized_list)
+        fixed_index = optimized_list[-1]
+        current_best = index_list[0]
     optimized_list.append(index_list[0])
-    best = 1
-    print(index_list)
-    for i in range(1,len(index_list)):
-        if matrix[index_list[i]][0] < matrix[best][0]:
-            best = index_list[i]
-            optimized_list.append(best)
-    index_list.remove(best)
-    print(optimized_list)
-    print(index_list)
-
+    optimized_list.append(0)
     return optimized_list
 
-list = [0,1,8,4,6,9]
-for i in list:
+
+init_index_list = [0, 1, 8, 4, 6, 9, 0]
+for i in init_index_list:
     print(initial_distance_matrix[i][0])
 
-print(optimize_index_matrix(list, initial_distance_matrix))
+print(optimize_path(init_index_list, initial_distance_matrix))
