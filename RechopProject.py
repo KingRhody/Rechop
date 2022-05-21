@@ -14,11 +14,13 @@ amount_list = [84975.8, 24455.9, 17701.6, 131380.2,
                33756.1, 30436.7, 39389.7, 17641.4, 60841.9,
                36822.8, 15397.9, 67971.4, 33948.6, 18766.3,
                91189, 59252.9, 17633, 40913.6, 29474.2]
+max_people_cities = [1, 4, 15]
 
 
-def generate_index_path(c_path_index_list, len_list, index_path_list):
+def generate_index_path(c_path_index_list, max_index_city, len_list, index_path_list):
     """Generation des indices de commune à traverser par un camion c"""
     c_path_index_list.append(0)
+    c_path_index_list.append(max_people_cities[max_index_city])
     while len(index_path_list) != 0 and len(c_path_index_list) != len_list:
         index = random.randint(0, len(index_path_list) - 1)
         c_path_index_list.append(index_path_list[index])
@@ -57,24 +59,48 @@ def optimize_index_matrix(index_matrix, distance_matrix):
     return optimized_matrix
 
 
+def amount_computing(matrix_path):
+    list_of_amount = []
+    for truck in matrix_path:
+        amount = 0
+        for i in range(1, len(truck) - 1):
+            amount += amount_list[truck[i] - 1]
+        list_of_amount.append(amount)
+    return list_of_amount
+
+
+def check_amount(matrix_path):
+    total_amount = 851949.0000000001
+    res = True
+    list_of_amount = amount_computing(matrix_path)
+    for amount in list_of_amount:
+        if amount >= 0.5 * total_amount:
+            res = False
+    return res
+
+
 def c_index_init(current_matrix_index):
     """Initialisation des indices de commune à traverser par les trois camions"""
     index_path_list = list(range(1, 20))
     len_list1, len_list2, len_list3 = 7, 7, 8
-    generate_index_path(current_matrix_index[0], len_list1, index_path_list)
-    generate_index_path(current_matrix_index[1], len_list2, index_path_list)
-    generate_index_path(current_matrix_index[2], len_list3, index_path_list)
+    max_index_city = random.sample(range(3), 3)
+    for i in max_index_city:
+        index_path_list.remove(max_people_cities[max_index_city[i]])
+    generate_index_path(current_matrix_index[0], max_index_city[0], len_list1, index_path_list)
+    generate_index_path(current_matrix_index[1], max_index_city[1], len_list2, index_path_list)
+    generate_index_path(current_matrix_index[2], max_index_city[2], len_list3, index_path_list)
 
     return current_matrix_index
 
+
 def get_verified_matrix(current_index_matrix):
     new_matrix = c_index_init(current_index_matrix)
-    check = check_amount(amount_list, new_matrix)
+    check = check_amount(new_matrix)
     while not check:
-        t_matrix = [[],[],[]]
+        t_matrix = [[], [], []]
         current_matrix = c_index_init(t_matrix)
-        check = check_amount(amount_list,current_matrix)
-        if check == True:
+        check = check_amount(current_matrix)
+        if check:
             return current_matrix
     return new_matrix
 
@@ -102,7 +128,7 @@ def find_path_dist_risk(all_index_list, current_matrix_path):
             get_distance = initial_distance_matrix[max(i[c], i[c + 1])][min(i[c], i[c + 1])]
             current_matrix_path[current_index].append(get_distance)
             dist_foreach_path[current_index] += get_distance
-            if c != 0 and c < len(i)-1 and i[c] < 19:
+            if c != 0 and c < len(i) - 1 and i[c] < 19:
                 risk_foreach_path[current_index] += get_distance * amount_list[i[c]]
             c += 1
         current_index += 1
@@ -113,14 +139,13 @@ def find_path_dist_risk(all_index_list, current_matrix_path):
 def compare_solution(distance1, risk1, distance2, risk2):
     """Cette fonction compare deux solutions et renvoie True si la solution
     précédente est plus optimale, False si non"""
+
     more_optimal = True
-    best_distance, best_risk = distance1, risk1
 
     if distance2 < distance1 and risk2 < risk1:
         best_distance, best_risk = distance2, risk2
         more_optimal = False
-
-    print(best_distance, best_risk)
+        print(best_distance, best_risk)
 
     return more_optimal
 
@@ -131,36 +156,38 @@ def get_new_solution(matrix_index, matrix_path):
     return [optimized_matrix, distance, risk]
 
 
-def find_optimal_sol():
+def find_first_population(iteration, first_population_list):
     """Cette fonction génère plusieurs solutions, dont les chemins (random)
         sont optimisées par l'algorithme de Bellman Kallaba"""
-    mat_index, mat_path,  = [[], [], []], [[], [], []]
+    mat_index, mat_path, = [[], [], []], [[], [], []]
     current_sol = get_new_solution(mat_index, mat_path)
-    for i in range(2000):
+    print('The current optimal solution is : ', current_sol[0])
+    print(current_sol[1], current_sol[2])
+    first_population_list.append(current_sol)
+    while iteration > len(first_population_list):
         new_mat_path, new_matrix_index = [[], [], []], [[], [], []]
         new_sol = get_new_solution(new_matrix_index, new_mat_path)
-        print(new_sol)
         current_optimal = compare_solution(current_sol[1], current_sol[2], new_sol[1], new_sol[2])
         if not current_optimal:
             current_sol = copy.deepcopy(new_sol)
+            first_population_list.append(current_sol)
             print('The current optimal solution is : ', current_sol[0])
+    print(len(first_population_list))
+    return first_population_list
 
-def amount_computing(amount_list,matrix_path):
-    list_of_amount = []
-    for truck in matrix_path:
-        amount = 0
-        for i in range(1,len(truck)-1):
-            amount += amount_list[truck[i]-1]
-        list_of_amount.append(amount)
-    return list_of_amount
 
-def check_amount(amount_list, matrix_path):
-    total_amount = 851949.0000000001
-    res = True
-    list_of_amount = amount_computing(amount_list,matrix_path)
-    for amount in list_of_amount:
-        if amount>= 0.5*total_amount:
-            res = False
-    return res
+"def combine_parents(first_population):"
 
-find_optimal_sol()
+
+
+def find_new_generation(first_population):
+    """ TODO: combiner deux à deux les parents de la première génération
+    new_generation = combine_parents(first_population)
+        TODO: selectionner les enfants s'ils sont plus optimaux
+        TODO: Faire muter un enfant avec l'algo de B-K
+    """
+
+
+nb_population = 10
+population_list = []
+print(find_first_population(nb_population, population_list))
